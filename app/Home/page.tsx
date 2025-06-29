@@ -16,6 +16,7 @@ interface Product {
   image: string;
   category: string;
   description?: string;
+    product: string[]
 }
 
 interface Category {

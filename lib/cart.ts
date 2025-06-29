@@ -1,4 +1,4 @@
-"use server"
+/* "use server"
 
 import { cookies } from "next/headers"
 import { z } from "zod"
@@ -183,3 +183,4 @@ export async function clearCart() {
 
 // Calculate cart totals
 
+ */

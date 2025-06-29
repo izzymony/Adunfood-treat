@@ -8,36 +8,38 @@ import {
   where, 
   setDoc, 
   doc, 
-
-  deleteDoc  // Added for delete functionality
+  deleteDoc,
+  DocumentData
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 
 interface FirestoreProduct {
-  id: string;          // The field you're querying by
-  firestoreId: string; // The actual document ID
+  id: string;
+  firestoreId: string;
   name?: string;
   description?: string;
   price?: number;
   category?: string;
   image?: string;
-  createdAt?: any;
+  createdAt?: Timestamp | Date | string;
+  updatedAt?: Timestamp | Date | string;
 }
 
-
-export async function createProduct(product: {
+interface ProductInput {
+  id: string;
   name: string;
   description: string;
   price: number;
   category: string;
   image: string | File;
-  id: string;
-  imageUrl: string;
-  images: string[];
-}) {
+  imageUrl?: string;
+  images?: string[];
+  oldImageUrl?: string;
+}
+
+export async function createProduct(product: ProductInput): Promise<string> {
   let imageUrl = typeof product.image === 'string' ? product.image : '';
 
-  // If image is a File object, upload it to storage first
   if (product.image instanceof File) {
     try {
       const fileName = `products/${Date.now()}-${product.image.name}`;
@@ -62,41 +64,30 @@ export async function createProduct(product: {
   return docRef.id;
 }
 
-export async function fetchProducts() {
+export async function fetchProducts(): Promise<FirestoreProduct[]> {
   const querySnapshot = await getDocs(collection(db, "products"));
   return querySnapshot.docs.map(doc => ({
-    id: doc.id,
+    firestoreId: doc.id,
     ...doc.data(),
-  }));
+  } as FirestoreProduct));
 }
 
-export async function fetchProductsByCategory(category: string) {
+export async function fetchProductsByCategory(category: string): Promise<FirestoreProduct[]> {
   const q = query(collection(db, "products"), where("category", "==", category));
   const querySnapshot = await getDocs(q);
   return querySnapshot.docs.map(doc => ({
-    id: doc.id,
+    firestoreId: doc.id,
     ...doc.data(),
-  }));
+  } as FirestoreProduct));
 }
 
-export async function setProductWithId(product: { 
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  image: string | File;
-  oldImageUrl?: string;
-}) {
+export async function setProductWithId(product: ProductInput): Promise<void> {
   let imageUrl = typeof product.image === 'string' ? product.image : '';
 
-  // If image is a File object, upload it to storage first
   if (product.image instanceof File) {
     try {
-      // Delete old image if provided
       if (product.oldImageUrl) {
         try {
-          // Extract path from URL or use full URL
           const oldImagePath = product.oldImageUrl.split('?')[0].split('/o/')[1];
           const decodedPath = decodeURIComponent(oldImagePath);
           const oldImageRef = ref(storage, decodedPath);
@@ -106,7 +97,6 @@ export async function setProductWithId(product: {
         }
       }
       
-      // Upload new image
       const fileName = `products/${product.id}-${Date.now()}-${product.image.name}`;
       const storageRef = ref(storage, fileName);
       const snapshot = await uploadBytes(storageRef, product.image);
@@ -130,7 +120,6 @@ export async function setProductWithId(product: {
 
 export async function deleteProductImage(imageUrl: string): Promise<boolean> {
   try {
-    // Extract path from URL or use full URL
     const imagePath = imageUrl.split('?')[0].split('/o/')[1];
     const decodedPath = decodeURIComponent(imagePath);
     const imageRef = ref(storage, decodedPath);
@@ -142,22 +131,8 @@ export async function deleteProductImage(imageUrl: string): Promise<boolean> {
   }
 }
 
-/**
- * The function `deleteProduct` deletes a product document from Firestore and optionally deletes the
- * associated image.
- * @param {string} productId - The `productId` parameter is a string that represents the unique
- * identifier of the product that you want to delete.
- * @param {string} [imageUrl] - The `imageUrl` parameter in the `deleteProduct` function is an optional
- * parameter that represents the URL of the image associated with the product that is being deleted. If
- * an `imageUrl` is provided when calling the `deleteProduct` function, the function will attempt to
- * delete the product image before deleting the
- * @returns The `deleteProduct` function returns a `Promise<boolean>`. The boolean value indicates
- * whether the product deletion was successful (`true`) or if an error occurred during the deletion
- * process (`false`).
- */
 export async function deleteProduct(productId: string, imageUrl?: string): Promise<boolean> {
   try {
-    // Delete the product image first if it exists
     if (imageUrl) {
       try {
         await deleteProductImage(imageUrl);
@@ -166,9 +141,7 @@ export async function deleteProduct(productId: string, imageUrl?: string): Promi
       }
     }
 
-    // Delete the product document from Firestore
     await deleteDoc(doc(db, "products", productId));
-    
     return true;
   } catch (error) {
     console.error("Error deleting product:", error);
@@ -176,16 +149,6 @@ export async function deleteProduct(productId: string, imageUrl?: string): Promi
   }
 }
 
-/**
- * The function fetches a product by its ID from a database and returns the product data if found,
- * otherwise throws an error.
- * @param {string} productId - The `productId` parameter is a string that represents the unique
- * identifier of the product you want to fetch from the database.
- * @returns The `fetchProductById` function returns a Promise that resolves to an object containing the
- * product information if the product with the specified `productId` exists in the database. The object
- * includes the product id (`id`) and all the data associated with the product. If the product is not
- * found, an error with the message "Product not found" is thrown.
- */
 export async function fetchProductById(productId: string): Promise<FirestoreProduct> {
   try {
     const q = query(
@@ -203,8 +166,8 @@ export async function fetchProductById(productId: string): Promise<FirestoreProd
     const data = doc.data();
     
     return {
-      firestoreId: doc.id,  // The document ID
-      id: data.id,          // The id field from your document
+      firestoreId: doc.id,
+      id: data.id,
       name: data.name,
       description: data.description,
       price: data.price,
@@ -217,11 +180,8 @@ export async function fetchProductById(productId: string): Promise<FirestoreProd
     throw error instanceof Error ? error : new Error("Failed to fetch product");
   }
 }
+
 export async function fetchAllProductIds(): Promise<string[]> {
   const querySnapshot = await getDocs(collection(db, "products"));
   return querySnapshot.docs.map(doc => doc.id);
 }
-// Type definition
-
-
-

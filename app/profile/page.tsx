@@ -60,31 +60,35 @@ export default function ProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!user) return
+    if (!user || !auth.currentUser) return
 
     setIsSaving(true)
     setError("")
     setSuccess("")
 
     try {
-      // Only update displayName and photoURL in Firebase Auth
-      await updateProfile(auth.currentUser!, {
-        displayName: `${user.firstName} ${user.lastName}`,
-        photoURL: user.photoURL || undefined,
+      await updateProfile(auth.currentUser, {
+        displayName: `${user.firstName} ${user.lastName}`.trim(),
+        photoURL: user.photoURL || null,
       })
       setSuccess("Profile updated successfully!")
       setTimeout(() => setSuccess(""), 3000)
-    } catch (err) {
-      setError("An unexpected error occurred")
+    } catch (error) {
+      console.error("Profile update error:", error)
+      setError(error instanceof Error ? error.message : "An unexpected error occurred")
     } finally {
       setIsSaving(false)
     }
   }
 
   const handleSignOut = async () => {
-    await firebaseSignOut(auth)
-    router.push("/login")
-    router.refresh()
+    try {
+      await firebaseSignOut(auth)
+      router.push("/login")
+      router.refresh()
+    } catch (error) {
+      console.error("Sign out error:", error)
+    }
   }
 
   if (isLoading) {
@@ -108,6 +112,12 @@ export default function ProfilePage() {
     )
   }
 
+  const getAvatarFallback = () => {
+    const firstInitial = user.firstName?.[0]?.toUpperCase() || 'U'
+    const lastInitial = user.lastName?.[0]?.toUpperCase() || ''
+    return `${firstInitial}${lastInitial}`
+  }
+
   return (
     <div className="container py-12">
       <div className="flex flex-col md:flex-row gap-8">
@@ -115,18 +125,17 @@ export default function ProfilePage() {
           <Card>
             <CardHeader>
               <div className="flex flex-col items-center space-y-4">
-               <Avatar className="h-24 w-24">
-  <AvatarImage 
-    src={user.photoURL || "/placeholder.svg"} 
-    alt={`${user.firstName} ${user.lastName}`.trim() || "User"} 
-  />
-  <AvatarFallback>
-    {(user.firstName?.[0] || 'U').toUpperCase()}
-    {(user.lastName?.[0] || '').toUpperCase()}
-  </AvatarFallback>
-</Avatar>
+                <Avatar className="h-24 w-24">
+                  <AvatarImage 
+                    src={user.photoURL || "/placeholder.svg"} 
+                    alt={`${user.firstName} ${user.lastName}`.trim() || "User"} 
+                  />
+                  <AvatarFallback>
+                    {getAvatarFallback()}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="text-center">
-                  <CardTitle>{`${user.firstName} ${user.lastName}`}</CardTitle>
+                  <CardTitle>{`${user.firstName} ${user.lastName}`.trim() || "User"}</CardTitle>
                   <CardDescription>{user.email}</CardDescription>
                 </div>
               </div>
@@ -180,9 +189,10 @@ export default function ProfilePage() {
                     <Input
                       id="firstName"
                       name="firstName"
-                      value={user.firstName || ""}
+                      value={user.firstName}
                       onChange={handleChange}
                       disabled={isSaving}
+                      required
                     />
                   </div>
                   <div className="space-y-2">
@@ -190,7 +200,7 @@ export default function ProfilePage() {
                     <Input
                       id="lastName"
                       name="lastName"
-                      value={user.lastName || ""}
+                      value={user.lastName}
                       onChange={handleChange}
                       disabled={isSaving}
                     />
@@ -201,11 +211,10 @@ export default function ProfilePage() {
                       id="email"
                       name="email"
                       type="email"
-                      value={user.email || ""}
+                      value={user.email}
                       disabled
                     />
                   </div>
-                  {/* Optional fields for phone, address, etc. */}
                   <div className="space-y-2">
                     <Label htmlFor="photoURL">Profile Photo URL</Label>
                     <Input
@@ -214,6 +223,7 @@ export default function ProfilePage() {
                       value={user.photoURL || ""}
                       onChange={handleChange}
                       disabled={isSaving}
+                      placeholder="https://example.com/photo.jpg"
                     />
                   </div>
                 </div>

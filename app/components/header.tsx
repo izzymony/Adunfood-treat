@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Image from 'next/image' 
 import { Search, Menu, X, LogOut, ChevronDown } from "lucide-react"
-import { Skeleton } from "@/components/ui/skeleton"
+
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import {
   DropdownMenu,
@@ -25,18 +25,24 @@ import { Category } from "@/types"
 import { fetchCategories } from "@/lib/firebase/cartegory"
 import { Loader2 } from "lucide-react"
 
+interface User {
+  firstName: string
+  lastName: string
+  email: string | null
+  photoURL: string | null
+}
+
 export default function Header() {
   const isMobile = useMobile()
   const router = useRouter()
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [categories, setCategories] = useState<Category[]>([])
   const [loadingCategories, setLoadingCategories] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false) // New state for dropdown
- 
-  
+  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false)
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
@@ -45,9 +51,7 @@ export default function Header() {
           lastName: firebaseUser.displayName?.split(" ")[1] || "",
           email: firebaseUser.email,
           photoURL: firebaseUser.photoURL,
-         
         })
-        
         setIsLoggedIn(true)
       } else {
         setUser(null)
@@ -75,17 +79,23 @@ export default function Header() {
     return () => unsubscribe()
   }, [])
 
- 
- 
-
   const handleSignOut = async () => {
-    await firebaseSignOut(auth)
-    setUser(null)
-    setIsLoggedIn(false)
-    router.push("/login")
+    try {
+      await firebaseSignOut(auth)
+      setUser(null)
+      setIsLoggedIn(false)
+      router.push("/login")
+    } catch (error) {
+      console.error("Error signing out:", error)
+    }
   }
 
-  
+  const getAvatarFallback = (user: User | null) => {
+    if (!user) return "U"
+    const firstInitial = user.firstName?.[0]?.toUpperCase() || 'U'
+    const lastInitial = user.lastName?.[0]?.toUpperCase() || ''
+    return `${firstInitial}${lastInitial}`
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white bg-white/30 backdrop-blur-md border border-white/40 shadow-md">
@@ -106,7 +116,6 @@ export default function Header() {
                 All Products
               </Link>
               
-              {/* Mobile Categories Dropdown */}
               <div className="flex flex-col gap-2">
                 <button 
                   onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
@@ -135,7 +144,9 @@ export default function Header() {
                           {category.image && (
                             <Image 
                               src={category.image} 
-                              alt="" 
+                              alt={category.name}
+                              width={24}
+                              height={24}
                               className="w-6 h-6 object-cover rounded"
                             />
                           )}
@@ -151,7 +162,13 @@ export default function Header() {
         </Sheet>
 
         <Link href="/" className="mr-6 flex items-center">
-          <Image src='/WhatsApp_Image_2025-06-11_at_21.52.10_d4ac8615-removebg-preview.png' alt="" width={60} height={60}/>
+          <Image 
+            src='/WhatsApp_Image_2025-06-11_at_21.52.10_d4ac8615-removebg-preview.png' 
+            alt="Logo" 
+            width={60} 
+            height={60}
+            priority
+          />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-6 text-sm">
@@ -162,7 +179,6 @@ export default function Header() {
             All Products
           </Link>
           
-          {/* Desktop Categories Dropdown */}
           <div className="relative">
             <button 
               onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
@@ -190,9 +206,11 @@ export default function Header() {
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-green-600 flex items-center gap-2"
                       >
                         {category.image && (
-                          <img 
+                          <Image 
                             src={category.image} 
-                            alt="" 
+                            alt={category.name}
+                            width={24}
+                            height={24}
                             className="w-6 h-6 object-cover rounded"
                           />
                         )}
@@ -230,8 +248,7 @@ export default function Header() {
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={user.photoURL || ""} alt={user.firstName || "User"} />
                     <AvatarFallback>
-                      {user.firstName?.[0]}
-                      {user.lastName?.[0]}
+                      {getAvatarFallback(user)}
                     </AvatarFallback>
                   </Avatar>
                   <span className="sr-only">User menu</span>
@@ -242,8 +259,7 @@ export default function Header() {
                   <Avatar className="h-8 w-8">
                     <AvatarImage src={user.photoURL || ""} alt={user.firstName || "User"} />
                     <AvatarFallback>
-                      {user.firstName?.[0]}
-                      {user.lastName?.[0]}
+                      {getAvatarFallback(user)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col space-y-1 leading-none">

@@ -1,11 +1,25 @@
-
 import { db } from "@/firebaseConfig"
 import { doc, setDoc, getDoc, updateDoc, increment, collection, getDocs, deleteDoc, writeBatch } from "firebase/firestore"
 
+interface Product {
+  id: string
+  name: string
+  description?: string
+  price: number
+  category?: string
+  image?: string
+  [key: string]: unknown // For any additional product properties
+}
+
+interface CartItem extends Product {
+  quantity: number
+}
+
 // Add or increment product in cart
-export async function addToCart(userId: string, product: any) {
+export async function addToCart(userId: string, product: Product) {
   const itemRef = doc(db, "carts", userId, "items", product.id)
   const itemSnap = await getDoc(itemRef)
+  
   if (itemSnap.exists()) {
     // If item exists, increment quantity
     await updateDoc(itemRef, {
@@ -19,10 +33,14 @@ export async function addToCart(userId: string, product: any) {
     })
   }
 }
+
 // Fetch all cart items for user
-export async function fetchCart(userId: string) {
+export async function fetchCart(userId: string): Promise<CartItem[]> {
   const itemsSnap = await getDocs(collection(db, "carts", userId, "items"))
-  return itemsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+  return itemsSnap.docs.map(doc => ({ 
+    id: doc.id, 
+    ...doc.data() 
+  } as CartItem))
 }
 
 // Update quantity
@@ -41,8 +59,8 @@ export async function removeCartItem(userId: string, productId: string) {
 export async function clearCart(userId: string) {
   const itemsSnap = await getDocs(collection(db, "carts", userId, "items"))
   const batch = writeBatch(db)
-  for (const docSnap of itemsSnap.docs) {
+  itemsSnap.docs.forEach(docSnap => {
     batch.delete(docSnap.ref)
-  }
+  })
   await batch.commit()
 }
