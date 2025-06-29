@@ -14,6 +14,18 @@ import {
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 
+interface FirestoreProduct {
+  id: string;          // The field you're querying by
+  firestoreId: string; // The actual document ID
+  name?: string;
+  description?: string;
+  price?: number;
+  category?: string;
+  image?: string;
+  createdAt?: any;
+}
+
+
 export async function createProduct(product: {
   name: string;
   description: string;
@@ -175,20 +187,36 @@ export async function deleteProduct(productId: string, imageUrl?: string): Promi
  * includes the product id (`id`) and all the data associated with the product. If the product is not
  * found, an error with the message "Product not found" is thrown.
  */
-export async function fetchProductById(productId: string) {
-  const q = query(
-    collection(db, "products"),
-    where("id", "==", productId)
-  );
-  
-  const snapshot = await getDocs(q);
-  if (snapshot.empty) throw new Error("Product not found");
-  
-  const doc = snapshot.docs[0];
-  return { 
-    firestoreId: doc.id, // Optional: keep original ID
-    ...doc.data() 
-  };
+export async function fetchProductById(productId: string): Promise<FirestoreProduct> {
+  try {
+    const q = query(
+      collection(db, "products"),
+      where("id", "==", productId)
+    );
+    
+    const snapshot = await getDocs(q);
+    
+    if (snapshot.empty) {
+      throw new Error(`Product with ID ${productId} not found`);
+    }
+    
+    const doc = snapshot.docs[0];
+    const data = doc.data();
+    
+    return {
+      firestoreId: doc.id,  // The document ID
+      id: data.id,          // The id field from your document
+      name: data.name,
+      description: data.description,
+      price: data.price,
+      category: data.category,
+      image: data.image,
+      createdAt: data.createdAt
+    };
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    throw error instanceof Error ? error : new Error("Failed to fetch product");
+  }
 }
 export async function fetchAllProductIds(): Promise<string[]> {
   const querySnapshot = await getDocs(collection(db, "products"));
@@ -202,3 +230,5 @@ interface Product {
   description?: string;
   // Add other fields as needed
 }
+
+

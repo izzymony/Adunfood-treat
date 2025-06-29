@@ -6,7 +6,10 @@ const nextConfig: NextConfig = {
     domains: [
       'i.pinimg.com',       // Pinterest images
       'localhost',          // Local development
-      'yourdomain.com',     // Your own domain
+      'yourdomain.com',   
+       'i.pining.com', // The domain from your image URL
+      'firebasestorage.googleapis.com', // For Firebase Storage images
+      'localhost' // For d  // Your own domain
       // Add other domains as needed
 
     ],

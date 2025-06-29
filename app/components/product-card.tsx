@@ -35,10 +35,7 @@ interface ProductCardProps {
  * alerts.
  */
 export function ProductCard({ product }: ProductCardProps) {
-  const [adding, setAdding] = useState(false)
-  const { id } = useParams()
-    const [products, setProducts] = useState<any[]>([])
-    const [loading, setLoading] = useState(true)
+
     const [addingId, setAddingId] = useState<string | null>(null)
   // Replace this with your actual auth logic
   // const { user } = useAuth()

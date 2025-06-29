@@ -35,8 +35,7 @@ export default function Header() {
   const [loadingCategories, setLoadingCategories] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false) // New state for dropdown
-  const [isMounted, setIsMounted] = useState(false)
-  const [authLoading, setAuthLoading] = useState(true)
+ 
   
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
