@@ -8,8 +8,7 @@ import {
   where, 
   setDoc, 
   doc, 
-  getDoc,
- limit,
+
   deleteDoc  // Added for delete functionality
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
@@ -223,12 +222,6 @@ export async function fetchAllProductIds(): Promise<string[]> {
   return querySnapshot.docs.map(doc => doc.id);
 }
 // Type definition
-interface Product {
-  id: string;
-  name: string;
-  price?: number;
-  description?: string;
-  // Add other fields as needed
-}
+
 
 

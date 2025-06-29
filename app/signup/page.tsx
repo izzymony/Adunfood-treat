@@ -1,20 +1,22 @@
 'use client'
-import React, {useState} from 'react'
+import React from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import {useRouter} from 'next/navigation'
 import {Button} from '@/components/ui/button'
 import {Input} from '@/components/ui/input'
-import {Card, CardContent, CardDescription, CardAction, CardHeader, CardTitle} from '@/components/ui/card'
+import {Card, CardContent, CardDescription,  CardHeader, CardTitle} from '@/components/ui/card'
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2 } from "lucide-react"
 import { Label } from '@/components/ui/label'
-import {auth, googleProvider} from '@/firebaseConfig'
-import { createUserWithEmailAndPassword } from 'firebase/auth'
+import {auth} from '@/firebaseConfig'
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
 const page = () => {
 
   const [isLoading, setLoading] = useState (false)
   const [error, setError] = useState("")
   const router = useRouter()
+  const [name, setName] = useState("");
 
   async function handleSubmit(event:React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -27,8 +29,11 @@ const page = () => {
     const password = formData.get("password") as string
 
     try{
-      await createUserWithEmailAndPassword(auth, email, password)
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password, )
 
+     await updateProfile(userCredential.user,{
+      displayName:name
+     })
       router.push("/Home")
       router.refresh()
 
@@ -60,7 +65,9 @@ const page = () => {
           <Input 
             id="name" 
             name="name" 
-            type="name" 
+            type="text" 
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             placeholder="John Doe" 
             required 
             disabled={isLoading} 
@@ -103,13 +110,18 @@ const page = () => {
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Signing in...
+              Signing Up...
             </>
           ) : (
             "Sign In"
           )}
         </Button>
-        
+        <div className='text-center text-sm'>
+            Already have an account?{""}
+            <Link href={'/login'}>
+            Log in
+            </Link>
+        </div>
       </form>
     </CardContent>
   </Card>
