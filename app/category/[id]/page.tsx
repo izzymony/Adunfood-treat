@@ -1,21 +1,32 @@
 "use client"
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
+import Image from "next/image"
 import { fetchProductsByCategory } from "@/lib/firebase/products"
 import { ShoppingCart, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { addToCart } from "@/lib/firebase/cart"
 
+interface Product {
+  id: string
+  name: string
+  description: string
+  price: number
+  category: string
+  image?: string
+}
+
 export default function CategoryPage() {
   const { id } = useParams()
-  const [products, setProducts] = useState<any[]>([])
+  const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [addingId, setAddingId] = useState<string | null>(null)
   
-  const user = { uid: "demo-user-id" } // Replace with real user
-  
-  const handleAddToCart = async (product: any) => {
+  // Replace with real user authentication
+  const user = { uid: "demo-user-id" }
+
+  const handleAddToCart = async (product: Product) => {
     if (!user) {
       alert("Please sign in to add to cart")
       return
@@ -24,7 +35,8 @@ export default function CategoryPage() {
     try {
       await addToCart(user.uid, { ...product, id: String(product.id) })
       alert("Added to cart!")
-    } catch (e) {
+    } catch (error) {
+      console.error("Failed to add to cart:", error)
       alert("Failed to add to cart")
     } finally {
       setAddingId(null)
@@ -33,10 +45,20 @@ export default function CategoryPage() {
 
   useEffect(() => {
     if (!id) return
-    fetchProductsByCategory(id as string).then(data => {
-      setProducts(data)
-      setLoading(false)
-    })
+    
+    const loadProducts = async () => {
+      try {
+        setLoading(true)
+        const data = await fetchProductsByCategory(id as string)
+        setProducts(data)
+      } catch (error) {
+        console.error("Error loading products:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadProducts()
   }, [id])
 
   return (
@@ -56,20 +78,23 @@ export default function CategoryPage() {
               className="group relative overflow-hidden rounded-lg border bg-white shadow-sm transition-all hover:shadow-md"
             >
               <Link href={`/product/${product.id}`}>
-                <div className="aspect-[4/3] overflow-hidden"> {/* 4:3 ratio instead of square */}
-      <img
-        src={product.image || "/image.png"}
-        alt={product.name}
-        className="w-full h-full object-cover transition-transform group-hover:scale-105"
-      />
-    </div>
+                <div className="aspect-[4/3] overflow-hidden">
+                  <Image
+                    src={product.image || "/image.png"}
+                    alt={product.name}
+                    width={400}
+                    height={300}
+                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                    priority={false}
+                  />
+                </div>
               </Link>
               <div className="p-4">
                 <div className="text-xs text-gray-500 mb-1">{product.category}</div>
                 <Link href={`/product/${product.id}`}>
                   <h3 className="font-semibold text-lg">{product.name}</h3>
                 </Link>
-                <p className="text-sm text-gray-500">{product.description}</p>
+                <p className="text-sm text-gray-500 line-clamp-2">{product.description}</p>
                 <div className="mt-4 flex items-center justify-between">
                   <span className="font-medium text-lg">₦{Number(product.price).toFixed(2)}</span>
                   <Button
@@ -96,6 +121,6 @@ export default function CategoryPage() {
           ))}
         </div>
       )}
-   </div>
+    </div>
   )
 }

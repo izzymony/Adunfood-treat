@@ -9,7 +9,7 @@ import {
   setDoc, 
   doc, 
   deleteDoc,
-  DocumentData
+ 
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 

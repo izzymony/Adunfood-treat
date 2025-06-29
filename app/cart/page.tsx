@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import Image from 'next/image'
 import { Minus, Plus, Trash2, Loader2 } from "lucide-react"
 import { fetchCart, updateCartItem, removeCartItem, clearCart } from "@/lib/firebase/cart"
 
@@ -12,8 +12,7 @@ const userId = "demo-user-id" // Replace with real user ID
 export default function CartPage() {
   const [cart, setCart] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [couponCode, setCouponCode] = useState("")
-  const [couponError, setCouponError] = useState("")
+ 
 
   useEffect(() => {
     fetchCart(userId).then(items => {
@@ -58,7 +57,7 @@ export default function CartPage() {
       {cart.length === 0 ? (
         <div className="text-center py-12">
           <h2 className="text-xl md:text-2xl font-medium mb-4">Your cart is empty</h2>
-          <p className="text-gray-500 mb-6 md:mb-8">Looks like you haven't added any products to your cart yet.</p>
+          <p className="text-gray-500 mb-6 md:mb-8">Looks like you haven &apos;t added any products to your cart yet.</p>
           <Link href="/products">
             <Button className="bg-green-600 hover:bg-green-700">Continue Shopping</Button>
           </Link>
@@ -83,8 +82,11 @@ export default function CartPage() {
                     <tr key={item.id} className="bg-white">
                       <td className="px-4 md:px-6 py-4">
                         <div className="flex items-center">
-                          <img
+                          <Image
                             src={item.image || "/placeholder.svg"}
+                            width={16}
+
+                            height={16}
                             alt={item.name}
                             className="h-12 w-12 md:h-16 md:w-16 object-cover rounded mr-3 md:mr-4"
                           />
