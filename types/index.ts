@@ -27,19 +27,17 @@ export interface UserLogin {
 
 // Product types
 export interface Product {
-  id: number
+  id: string
   name: string
   description: string
   price: number
-  originalPrice?: number
-  image: string
   category: string
-  rating: number
-  reviews: number
-  isPopular: boolean
-  inStock: boolean
-  preparationTime: string
+  image: string
+  createdAt?: string
+  updatedAt?: string
+  // Add any other product properties you need
 }
+
 
 export interface Category {
   id: number
@@ -261,6 +259,13 @@ export interface OrderQueries {
   updatePaymentStatus: (id: number, paymentStatus: Order["payment_status"]) => Promise<void>
 }
 
+export interface ProductInput {
+  name: string
+  description: string
+  price: number
+  category: string
+  image: File | string
+}
 export interface PaymentQueries {
   create: (paymentData: Omit<Payment, "id" | "created_at" | "updated_at">) => Promise<Payment>
   updateByReference: (reference: string, updates: Partial<Payment>) => Promise<Payment | null>
@@ -343,6 +348,9 @@ export interface FoodImageProps {
 export interface ApiError extends Error {
   status?: number
   code?: string
+}
+export interface FirestoreProduct extends Product {
+  firestoreId: string  // The document ID from Firestore
 }
 
 export interface FormErrors {

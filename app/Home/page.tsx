@@ -41,26 +41,25 @@ export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [productsData, categoriesData] = await Promise.all([
-          fetchProducts(),
-          fetchCategories()
-        ])
-        
-        setProducts(productsData)
-        setCategories(categoriesData)
-        setLoading({ products: false, categories: false })
-      } catch (err) {
-        setError('Failed to load data. Please try again later.')
-        setLoading({ products: false, categories: false })
-        console.error('Error loading data:', err)
-      }
+ useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const [productsData, categoriesData] = await Promise.all([
+        fetchProducts(),
+        fetchCategories()
+      ])
+      
+      setProducts(productsData)
+      setCategories(categoriesData)
+      setLoading({ products: false, categories: false })
+    } catch (err) {
+      console.error("Failed to load data:", err)
+      setLoading({ products: false, categories: false })
     }
+  }
 
-    loadData()
-  }, [])
+  fetchData()
+}, [])
 
   if (error) {
     return (

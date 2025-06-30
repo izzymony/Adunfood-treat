@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+
 import { Minus, Plus, Trash2, Loader2 } from "lucide-react"
 import { fetchCart, updateCartItem, removeCartItem, clearCart } from "@/lib/firebase/cart"
 
