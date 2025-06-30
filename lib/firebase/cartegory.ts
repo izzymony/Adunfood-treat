@@ -4,8 +4,7 @@ import {
   getDocs, 
   setDoc, 
   doc, 
-  query, 
-  orderBy, 
+ 
   serverTimestamp,
   deleteDoc  // Added for delete functionality
 } from "firebase/firestore";
