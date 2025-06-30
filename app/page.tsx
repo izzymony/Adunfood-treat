@@ -63,6 +63,7 @@ export default function HomePage() {
       console.error("Failed to load data:", err)
       setLoading({ products: false, categories: false })
     }
+    setError
   }
 
   fetchData()

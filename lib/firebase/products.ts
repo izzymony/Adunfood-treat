@@ -9,10 +9,23 @@ import {
   doc, 
   getDoc,
   deleteDoc,
-  Timestamp
+  Timestamp,
+  DocumentData,
+  
+  QueryDocumentSnapshot
 } from "firebase/firestore"
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage"
 import { Product, ProductInput } from "@/types"
+
+interface FirestoreProduct {
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  image: string;
+  createdAt?: Timestamp;
+  updatedAt?: Timestamp;
+}
 
 export async function createProduct(product: ProductInput): Promise<string> {
   const imageUrl = await handleImageUpload(product.image)
@@ -24,7 +37,7 @@ export async function createProduct(product: ProductInput): Promise<string> {
     category: product.category,
     image: imageUrl,
     createdAt: Timestamp.now(),
-  })
+  } as FirestoreProduct)
   
   return docRef.id
 }
@@ -72,7 +85,7 @@ export async function updateProduct(
     category: product.category,
     image: imageUrl,
     updatedAt: Timestamp.now(),
-  }, { merge: true })
+  } as Partial<FirestoreProduct>, { merge: true })
 }
 
 export async function deleteProduct(productId: string, imageUrl?: string): Promise<void> {
@@ -109,8 +122,8 @@ async function deleteImage(imageUrl: string): Promise<void> {
   }
 }
 
-function transformFirestoreData(doc: any): Product {
-  const data = doc.data()
+function transformFirestoreData(doc: QueryDocumentSnapshot<DocumentData>): Product {
+  const data = doc.data() as FirestoreProduct
   return {
     id: doc.id,
     name: data.name || 'Unnamed Product',

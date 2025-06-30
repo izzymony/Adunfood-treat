@@ -350,7 +350,8 @@ export interface ApiError extends Error {
   code?: string
 }
 export interface FirestoreProduct extends Product {
-  firestoreId: string  // The document ID from Firestore
+  firestoreId: string
+    // The document ID from Firestore
 }
 
 export interface FormErrors {
