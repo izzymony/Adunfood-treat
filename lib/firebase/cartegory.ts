@@ -20,28 +20,14 @@ export interface Category {
 }
 
 export async function fetchCategories(): Promise<Category[]> {
-  console.log("[Firebase] Fetching categories...");
-  try {
-    const q = query(collection(db, "categories"), orderBy("createdAt", "desc"));
-    const querySnapshot = await getDocs(q);
-    
-    const categories = querySnapshot.docs.map(doc => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        name: data.name,
-        image: data.image || undefined,
-        createdAt: data.createdAt,
-        updatedAt: data.updatedAt
-      } as Category;
-    });
-    
-    console.log("[Firebase] Successfully fetched categories:", categories.length);
-    return categories;
-  } catch (error) {
-    console.error("[Firebase] Error fetching categories:", error);
-    throw new Error("Failed to fetch categories. Please try again later.");
-  }
+  const querySnapshot = await getDocs(collection(db, "categories"))
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    name: doc.data().name,
+    slug: doc.data().slug || doc.id, // Fallback to id if slug doesn't exist
+    description: doc.data().description || '',
+    image: doc.data().image
+  }))
 }
 
 export async function addCategory(

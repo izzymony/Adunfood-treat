@@ -1,4 +1,4 @@
-/* "use server"
+"use server"
 
 import { cookies } from "next/headers"
 import { z } from "zod"
@@ -27,7 +27,7 @@ export async function getCart(): Promise<Cart> {
 
   try {
     return JSON.parse(cartCookie) as Cart
-  } catch (error) {
+  } catch {
     // If the cart is invalid, return an empty cart
     return { items: [] }
   }
@@ -180,7 +180,3 @@ export async function clearCart() {
     cart: { items: [] },
   }
 }
-
-// Calculate cart totals
-
- */

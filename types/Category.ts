@@ -1,7 +1,7 @@
-// types.ts
 export interface Category {
-  id: string;
-  name: string;
-  image?: string;
-  // Add other fields you expect from Firestore
+  id: string
+  name: string
+  slug: string
+  description?: string
+  image?: string
 }

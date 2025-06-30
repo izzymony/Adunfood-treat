@@ -10,11 +10,12 @@ import { addToCart } from "@/lib/firebase/cart"
 
 interface Product {
   id: string
+  firestoreId: string  // Add this to match FirestoreProduct
   name: string
   description: string
   price: number
   category: string
-  image?: string
+  image: string 
 }
 
 export default function CategoryPage() {
@@ -47,13 +48,23 @@ export default function CategoryPage() {
     if (!id) return
     
     const loadProducts = async () => {
-      try {
+      try{
         setLoading(true)
-        const data = await fetchProductsByCategory(id as string)
-        setProducts(data)
-      } catch (error) {
-        console.error("Error loading products:", error)
-      } finally {
+        const firestoreProducts = await fetchProductsByCategory(id as string)
+
+        const transformedProducts = firestoreProducts.map(product => ({
+           id: product.id,
+        firestoreId: product.firestoreId,
+        name: product.name || 'Unnamed Product', // Provide fallback
+        description: product.description || '',
+        price: product.price || 0,
+        category: product.category || 'Uncategorized',
+        image: product.image || '/placeholder-product.png'
+        }))
+        setProducts(transformedProducts)
+      }catch(error){
+        console.error('Error loading products:', error)
+      } finally{
         setLoading(false)
       }
     }

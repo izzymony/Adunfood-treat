@@ -2,41 +2,68 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import Image from 'next/image'
 import { Minus, Plus, Trash2, Loader2 } from "lucide-react"
 import { fetchCart, updateCartItem, removeCartItem, clearCart } from "@/lib/firebase/cart"
+
+interface CartItem {
+  id: string
+  name: string
+  price: number
+  quantity: number
+  image?: string
+  [key: string]: unknown // For any additional properties
+}
 
 const userId = "demo-user-id" // Replace with real user ID
 
 export default function CartPage() {
-  const [cart, setCart] = useState<any[]>([])
+  const [cart, setCart] = useState<CartItem[]>([])
   const [loading, setLoading] = useState(true)
- 
 
   useEffect(() => {
-    fetchCart(userId).then(items => {
-      setCart(items)
-      setLoading(false)
-    })
+    const loadCart = async () => {
+      try {
+        const items = await fetchCart(userId)
+        setCart(items as CartItem[])
+      } catch (error) {
+        console.error("Error loading cart:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadCart()
   }, [])
 
   const handleQuantityChange = async (id: string, newQuantity: number) => {
     if (newQuantity < 1) return
-    await updateCartItem(userId, id, newQuantity)
-    setCart(cart =>
-      cart.map(item => item.id === id ? { ...item, quantity: newQuantity } : item)
-    )
+    try {
+      await updateCartItem(userId, id, newQuantity)
+      setCart(cart =>
+        cart.map(item => item.id === id ? { ...item, quantity: newQuantity } : item)
+      )
+    } catch (error) {
+      console.error("Error updating quantity:", error)
+    }
   }
 
   const handleRemoveItem = async (id: string) => {
-    await removeCartItem(userId, id)
-    setCart(cart => cart.filter(item => item.id !== id))
+    try {
+      await removeCartItem(userId, id)
+      setCart(cart => cart.filter(item => item.id !== id))
+    } catch (error) {
+      console.error("Error removing item:", error)
+    }
   }
 
   const handleClearCart = async () => {
-    await clearCart(userId)
-    setCart([])
+    try {
+      await clearCart(userId)
+      setCart([])
+    } catch (error) {
+      console.error("Error clearing cart:", error)
+    }
   }
 
   const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
@@ -45,7 +72,7 @@ export default function CartPage() {
 
   if (loading) {
     return (
-      <div className=" py-12 flex items-center justify-center">
+      <div className="py-12 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-green-600" />
       </div>
     )
@@ -57,7 +84,9 @@ export default function CartPage() {
       {cart.length === 0 ? (
         <div className="text-center py-12">
           <h2 className="text-xl md:text-2xl font-medium mb-4">Your cart is empty</h2>
-          <p className="text-gray-500 mb-6 md:mb-8">Looks like you haven &apos;t added any products to your cart yet.</p>
+          <p className="text-gray-500 mb-6 md:mb-8">
+            Looks like you haven&apos;t added any products to your cart yet.
+          </p>
           <Link href="/products">
             <Button className="bg-green-600 hover:bg-green-700">Continue Shopping</Button>
           </Link>
@@ -74,7 +103,7 @@ export default function CartPage() {
                     <th className="px-4 md:px-6 py-3 text-center">Quantity</th>
                     <th className="px-4 md:px-6 py-3 text-right">Price</th>
                     <th className="px-4 md:px-6 py-3 text-right">Total</th>
-                    <th className="px-4 md:px-6 py-3"></th>
+                    <th className="px-4 md:px-6 py-3 text-right"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -84,10 +113,9 @@ export default function CartPage() {
                         <div className="flex items-center">
                           <Image
                             src={item.image || "/placeholder.svg"}
-                            width={16}
-
-                            height={16}
                             alt={item.name}
+                            width={64}
+                            height={64}
                             className="h-12 w-12 md:h-16 md:w-16 object-cover rounded mr-3 md:mr-4"
                           />
                           <div className="text-sm md:text-base">

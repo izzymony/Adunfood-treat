@@ -60,18 +60,25 @@ export default function Header() {
     })
 
     const loadCategories = async () => {
-      try {
-        setLoadingCategories(true)
-        const fetchedCategories = await fetchCategories()
-        setCategories(fetchedCategories)
-        setError(null)
-      } catch (err) {
-        console.error("Failed to load categories:", err)
-        setError("Failed to load categories")
-        setCategories([])
-      } finally {
-        setLoadingCategories(false)
-      }
+     try{
+      setLoadingCategories(true);
+      const fetchedCategories = await fetchCategories()
+      const transformedCatgories =fetchedCategories.map(cat => ({
+        id: cat.id,
+      name: cat.name,
+      slug: cat.id, // Using id as slug if slug isn't available
+      description: cat.description || '',
+      image: cat.image
+      }))
+      setCategories(transformedCatgories)
+      setError(null)
+     }catch(err){
+      console.error('Failed to load categories:',err)
+      setError("Failed to load categories")
+      setCategories([])
+     } finally{
+      setLoadingCategories(false)
+     }
     }
 
     loadCategories()
