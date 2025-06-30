@@ -43,25 +43,30 @@ export default function HomePage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [productsData, categoriesData] = await Promise.all([
-          fetchProducts(),
-          fetchCategories()
-        ])
-        
-        setProducts(productsData)
-        setCategories(categoriesData)
-        setLoading({ products: false, categories: false })
-      } catch (err) {
-        setError('Failed to load data. Please try again later.')
-        setLoading({ products: false, categories: false })
-        console.error('Error loading data:', err)
-      }
+  const fetchData = async () => {
+    try {
+      const [productsData, categoriesData] = await Promise.all([
+        fetchProducts(),
+        fetchCategories()
+      ])
+      
+      // Transform productsData to match Product interface if needed
+      const transformedProducts = productsData.map(product => ({
+        ...product,
+        product: [] // Add empty array if this field is required
+      }))
+      
+      setProducts(transformedProducts)
+      setCategories(categoriesData)
+      setLoading({ products: false, categories: false })
+    } catch (err) {
+      console.error("Failed to load data:", err)
+      setLoading({ products: false, categories: false })
     }
+  }
 
-    loadData()
-  }, [])
+  fetchData()
+}, [])
 
   if (error) {
     return (

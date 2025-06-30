@@ -41,7 +41,7 @@ export default function HomePage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [error, setError] = useState<string | null>(null)
 
- useEffect(() => {
+useEffect(() => {
   const fetchData = async () => {
     try {
       const [productsData, categoriesData] = await Promise.all([
@@ -49,7 +49,13 @@ export default function HomePage() {
         fetchCategories()
       ])
       
-      setProducts(productsData)
+      // Transform productsData to match Product interface if needed
+      const transformedProducts = productsData.map(product => ({
+        ...product,
+        product: [] // Add empty array if this field is required
+      }))
+      
+      setProducts(transformedProducts)
       setCategories(categoriesData)
       setLoading({ products: false, categories: false })
     } catch (err) {
