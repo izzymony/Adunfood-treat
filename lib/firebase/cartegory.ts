@@ -16,19 +16,24 @@ export interface Category {
   image?: string;
   createdAt?: string;
   updatedAt?: string;
+  
 }
 
 export async function fetchCategories(): Promise<Category[]> {
   const querySnapshot = await getDocs(collection(db, "categories"))
-  return querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    name: doc.data().name,
-    slug: doc.data().slug || doc.id, // Fallback to id if slug doesn't exist
-    description: doc.data().description || '',
-    image: doc.data().image
-  }))
+  return querySnapshot.docs.map(doc => {
+    const data = doc.data()
+    return {
+      id: doc.id,
+      name: data.name,
+      slug: data.slug || doc.id, // Fallback to id if slug doesn't exist
+      description: data.description || '',
+      image: data.image,
+      createdAt: data.createdAt?.toDate().toISOString(),
+      updatedAt: data.updatedAt?.toDate().toISOString()
+    }
+  })
 }
-
 export async function addCategory(
   categoryData: Category,
   imageFile?: File
