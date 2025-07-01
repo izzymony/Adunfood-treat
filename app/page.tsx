@@ -51,7 +51,7 @@ export default function HomePage() {
       }))
       
       setProducts(transformedProducts)
-      setCategories(categoriesData)
+      setCategories(categoriesData as Category[])
       setLoading({ products: false, categories: false })
     } catch (err) {
       console.error("Failed to load data:", err)
