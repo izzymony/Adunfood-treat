@@ -9,7 +9,7 @@ import { Loader2, ShoppingCart } from "lucide-react";
 
 interface Product {
   id: string;
-  firestoreId: string;
+  
   name: string;
   description: string;
   price: number;
@@ -45,7 +45,7 @@ const ProductPage = () => {
         const productData = await fetchProductById(productId);
         
         const transformedProduct: Product = {
-          firestoreId: productData.firestoreId,
+         
           id: productData.id,
           name: productData.name || 'Unnamed Product',
           description: productData.description || 'No description available',

@@ -64,7 +64,17 @@ const loadCategories = async () => {
   try {
     setLoadingCategories(true)
     const fetchedCategories = await fetchCategories()
-    setCategories(fetchedCategories)
+
+ const validatedCategories = fetchedCategories.map((cat: any) => ({
+      id: cat.id, // Ensure this matches Firestore document ID
+      name: cat.name || 'Unnamed Category',
+      slug: cat.slug || '',
+      description: cat.description || '',
+      image: cat.image || '/placeholder-category.png'
+    }))
+
+
+    setCategories(validatedCategories)
     setError(null)
   } catch (err) {
     console.error("Failed to load categories:", err)

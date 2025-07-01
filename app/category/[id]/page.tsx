@@ -10,7 +10,7 @@ import { addToCart } from "@/lib/firebase/cart"
 
 interface Product {
   id: string
-  firestoreId: string  // Add this to match FirestoreProduct
+   // Add this to match FirestoreProduct
   name: string
   description: string
   price: number
@@ -54,7 +54,7 @@ export default function CategoryPage() {
 
         const transformedProducts = firestoreProducts.map(product => ({
            id: product.id,
-        firestoreId: product.firestoreId,
+       
         name: product.name || 'Unnamed Product', // Provide fallback
         description: product.description || '',
         price: product.price || 0,
