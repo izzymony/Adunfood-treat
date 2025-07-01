@@ -39,7 +39,7 @@ export default function HomePage() {
     categories: true
   })
   const [categories, setCategories] = useState<Category[]>([])
-  const [error, setError] = useState<string | null>(null)
+  const [error] = useState<string | null>(null)
 
 useEffect(() => {
   const fetchData = async () => {
@@ -62,7 +62,7 @@ useEffect(() => {
       console.error("Failed to load data:", err)
       setLoading({ products: false, categories: false })
     }
-    setError
+   
   }
 
   fetchData()
