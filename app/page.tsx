@@ -8,24 +8,18 @@ import { fetchProducts } from "@/lib/firebase/products"
 import { fetchCategories } from "@/lib/firebase/cartegory"
 import { AnimatedHeader } from '@/app/components/AnimatedHeader'
 import Image from 'next/image'
+import { Product} from '@/types'
 
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  image: string;
-  category: string;
-  description?: string;
-    product: string[]
+export interface Category {
+  id: string
+  name: string
+  slug: string
+  description?: string
+  image?: string
 }
 
 
-interface Category {
-  id: string;
-  name: string;
-  image?: string;
-  description?: string;
-}
+
 
 const heroImages = [
   '/73f9dbd5e2cab4e598b19a8b63d386a8.jpg',
