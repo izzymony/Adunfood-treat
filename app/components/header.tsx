@@ -32,6 +32,8 @@ interface User {
   photoURL: string | null
 }
 
+
+
 export default function Header() {
   const isMobile = useMobile()
   const router = useRouter()
@@ -65,14 +67,13 @@ const loadCategories = async () => {
     setLoadingCategories(true)
     const fetchedCategories = await fetchCategories()
 
- const validatedCategories = fetchedCategories.map((cat: any) => ({
-      id: cat.id, // Ensure this matches Firestore document ID
+    const validatedCategories = fetchedCategories.map((cat: any) => ({
+      id: cat.id || cat._id || '', // Handle different possible ID fields
       name: cat.name || 'Unnamed Category',
       slug: cat.slug || '',
       description: cat.description || '',
       image: cat.image || '/placeholder-category.png'
     }))
-
 
     setCategories(validatedCategories)
     setError(null)
