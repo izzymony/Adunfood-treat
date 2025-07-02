@@ -40,11 +40,11 @@ export interface Product {
 
 
 export interface Category {
-  id: number
-  name: string
-  slug: string
-  description: string
-  image: string
+  id: string;
+  name: string;
+  slug?: string;         // <-- Add this line
+  description?: string;  // <-- Add this line
+  image?: string;
 }
 
 // Cart types

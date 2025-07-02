@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Image from 'next/image' 
-import { Search, Menu, X, LogOut, ChevronDown } from "lucide-react"
+import { Search, Menu, X, LogOut, ChevronDown, Loader2 } from "lucide-react"
 
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import {
@@ -21,9 +21,16 @@ import { CartButton } from "@/app/components/cart-button"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { auth } from '@/firebaseConfig'
 import { onAuthStateChanged, signOut as firebaseSignOut } from "firebase/auth"
-import { Category } from "@/types"
 import { fetchCategories } from "@/lib/firebase/cartegory"
-import { Loader2 } from "lucide-react"
+
+// Define Category type locally to ensure compatibility
+export interface Category {
+  id: string; // Firestore document IDs are strings
+  name: string;
+  slug?: string;
+  description?: string;
+  image?: string;
+}
 
 interface User {
   firstName: string
@@ -31,8 +38,6 @@ interface User {
   email: string | null
   photoURL: string | null
 }
-
-
 
 export default function Header() {
   const isMobile = useMobile()
@@ -61,30 +66,30 @@ export default function Header() {
       }
     })
 
-   // In your Header component
-const loadCategories = async () => {
-  try {
-    setLoadingCategories(true)
-    const fetchedCategories = await fetchCategories()
+    const loadCategories = async () => {
+      try {
+        setLoadingCategories(true)
+        const fetchedCategories = await fetchCategories()
 
-    const validatedCategories = fetchedCategories.map((cat: any) => ({
-      id: cat.id || cat._id || '', // Handle different possible ID fields
-      name: cat.name || 'Unnamed Category',
-      slug: cat.slug || '',
-      description: cat.description || '',
-      image: cat.image || '/placeholder-category.png'
-    }))
+        // Map and provide fallbacks for missing fields, type-safe
+        const validatedCategories: Category[] = fetchedCategories.map((cat) => ({
+  id: cat.id,
+  name: cat.name || 'Unnamed Category',
+  slug: cat.slug || '',
+  description: cat.description || '',
+  image: cat.image || '/placeholder-category.png'
+}))
 
-    setCategories(validatedCategories)
-    setError(null)
-  } catch (err) {
-    console.error("Failed to load categories:", err)
-    setError("Failed to load categories")
-    setCategories([])
-  } finally {
-    setLoadingCategories(false)
-  }
-}
+        setCategories(validatedCategories)
+        setError(null)
+      } catch (err) {
+        console.error("Failed to load categories:", err)
+        setError("Failed to load categories")
+        setCategories([])
+      } finally {
+        setLoadingCategories(false)
+      }
+    }
 
     loadCategories()
 

@@ -13,11 +13,15 @@ import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage
 export interface Category {
   id: string;
   name: string;
+  slug?:string;
+  description?: string
   image?: string;
   createdAt?: string;
   updatedAt?: string;
   
 }
+
+
 
 export async function fetchCategories(): Promise<Category[]> {
   const querySnapshot = await getDocs(collection(db, "categories"))
